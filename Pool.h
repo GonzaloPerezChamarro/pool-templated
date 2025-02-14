@@ -1,9 +1,9 @@
+
+#pragma once
+
 /**
- * @brief Pool básica
- * 
+ * @brief Basic templated pool
  */
-
-
 namespace example
 {
 	template< typename OBJECT >
@@ -12,111 +12,97 @@ namespace example
 		typedef OBJECT Object;
 		
 		/**
-		 * @brief Clase Nodo
-		 * 
+		 * @brief Base node class
 		 */
 		class Node
 		{
 		public:
-			/**
-			 * @brief Objeto
-			 * 
-			 */
+			/* Object of the node */
 			Object object;
 
-			/**
-			 * @brief Nodo anterior
-			 * 
-			 */
+			/* Pointer to next node */
 			Node * next;
 
-			/**
-			 * @brief Nodo siguiente
-			 * 
-			 */
+			/* Pointer to previous node */
 			Node * prev;
 		};
 
-		/**
-		 * @brief Vector de nodos
-		 * 
-		 */
+		/* List of nodes */
 		std::vector< Node > nodes;
 
-		/**
-		 * @brief Apunta al primer elemento de los nodos sin usar
-		 * 
-		 */
-		Node * first_free;
+		/* Pointer to the first free node */
+		Node* first_free;
 
-		/**
-		 * @brief Apunta al primer elemento de los nodos en uso
-		 * 
-		 */
-		Node * first_used;
-
+		/* Pointer to the first node in use */
+		Node* first_used;
 
 	public:
-
 		/**
-		 * @brief Clase iterador entre nodos
-		 * 
+		 * @brief Iterator class of the nodes
 		 */
 		class Iterator
 		{
-			Node * current;
+			/* Pointer to the current node */
+			Node* current;
 
 		public:
-
-			Iterator(Node * start)
+			/* Constructor */
+			Iterator(Node* start)
 			{
 				current = start;
 			}
 
-			Iterator(const Iterator &) = default;
+			/* Copy constructor by default */
+			Iterator(const Iterator&) = default;
 
-			Iterator & operator ++ ()
+			/* Overloaded ++ operator to move over the nodes */
+			Iterator& operator++ ()
 			{
 				current = current->next;
 				return *this;
 			}
 
-			Iterator operator ++ (int)
+			Iterator operator++ (int)
 			{
 				Iterator copy(*this);
 				current = current->next;
 				return copy;
 			}
 
-			Object & operator * ()
+			/* Overloaded * operator to access the object */
+			Object& operator* ()
 			{
 				return current->object;
 			}
 
-			bool operator == (const Iterator & other) const
+			/* Overloaded == operator to compare between objects */
+			bool operator== (const Iterator & other) const
 			{
 				return this->current == other.current;
 			}
 
-			bool operator != (const Iterator & other) const
+			/* Overloaded != operator to compare between objects */
+			bool operator!= (const Iterator & other) const
 			{
 				return this->current != other.current;
 			}
 		};
 
 	public:
-
 		/**
-		 * @brief Constructor de Pool
-		 * 
-		 * @param size 
+		 * @brief Pool Constructor
+		 * @param size of the pool
 		 */
 		Pool(size_t size) : nodes(size)
 		{
 			if (size > 0)
-				this->first_free = &nodes[0];
+			{
+				first_free = &nodes[0];
+			}
 			else
+			{
 				first_free = nullptr;
+			}
 
 			if (size > 1)
 			{
@@ -124,10 +110,10 @@ namespace example
 			}
 			first_free->prev = nullptr;
 
-			this->first_used = nullptr;
+			first_used = nullptr;
 
 
-			Node * current = first_free->next;
+			Node* current = first_free->next;
 
 			for (int i = 1; i < nodes.size() -1; ++i)
 			{
@@ -140,19 +126,15 @@ namespace example
 			current = &nodes[nodes.size() - 1];
 			current->prev = &nodes[nodes.size() - 2];
 			current->next = nullptr;
-
-
 		}
 
 		/**
-		 * @brief Devuelve Un objeto sin uso
-		 * 
+		 * @brief Returns a free object
 		 * @return Object* 
 		 */
-		Object * get_free_object()
+		Object* get_free_object()
 		{
-			Node * free = first_free;
-
+			Node* free = first_free;
 			if (free)
 			{
 				first_free = free->next;
@@ -172,18 +154,16 @@ namespace example
 				first_used = free;
 			}
 			
-			return reinterpret_cast<Object *>(free);
-
+			return reinterpret_cast<Object*>(free);
 		}
 
 		/**
-		 * @brief Livera el objeto que recibe
-		 * 
+		 * @brief Set the received object free
 		 * @param object 
 		 */
-		void free_object(Object * object)
+		void free_object(Object* object)
 		{
-			Node * node = reinterpret_cast<Node *>(object);
+			Node* node = reinterpret_cast<Node*>(object);
 
 			if (node->prev)
 			{
@@ -202,8 +182,10 @@ namespace example
 			node->prev = nullptr;
 			node->next = first_free;
 
-			if(first_free)
+			if (first_free)
+			{
 				first_free->prev = node;
+			}
 
 			first_free = node;
 		}
@@ -217,7 +199,6 @@ namespace example
 		{
 			return Iterator(nullptr);
 		}
-
 	};
 }
 
